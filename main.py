@@ -118,7 +118,7 @@ async def insult_loop():
         await asyncio.sleep(3600)
 
 
-@bot.application_command(description="Opt Into Getting Insulted Every Hour",contexts={discord.InteractionContextType.private_channel},integration_types={discord.IntegrationType.user_install})
+@bot.application_command(description="Opt Into Getting Insulted Every Hour",contexts={discord.InteractionContextType.private_channel,discord.InteractionContextType.guild,discord.InteractionContextType.bot_dm},integration_types={discord.IntegrationType.user_install,discord.IntegrationType.guild_install})
 async def insult(ctx):
     new_user_name = ctx.user.name
     new_user_id = ctx.user.id
@@ -151,7 +151,7 @@ async def insult(ctx):
         print(f"{new_user_id}|{new_user_name} already in list")
         await ctx.respond("Already in list, if you wish to opt out, use /imhurt.", ephemeral=True)
 
-@bot.slash_command(description="Opt Out Of Getting Insulted Every Hour... Weak...",contexts={discord.InteractionContextType.private_channel},integration_types={discord.IntegrationType.user_install})
+@bot.slash_command(description="Opt Out Of Getting Insulted Every Hour... Weak...",contexts={discord.InteractionContextType.private_channel,discord.InteractionContextType.guild,discord.InteractionContextType.bot_dm},integration_types={discord.IntegrationType.user_install,discord.IntegrationType.guild_install})
 async def imhurt(ctx):
     userFile = "users.json"
     user_id_remove = ctx.user.id
