@@ -1,4 +1,5 @@
 import discord
+from discord import IntegrationType
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -12,7 +13,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.dm_messages = True
 
-bot = discord.Bot(command_prefix="!", intents=intents)
+bot = discord.Bot(intents=intents)
 client = OpenAI(api_key=os.getenv("OPENAI_TOKEN"))
 
 message_index = 0
@@ -117,7 +118,7 @@ async def insult_loop():
         await asyncio.sleep(3600)
 
 
-@bot.slash_command(description="Opt Into Getting Insulted Every Hour")
+@bot.application_command(description="Opt Into Getting Insulted Every Hour",contexts={discord.InteractionContextType.private_channel},integration_types={discord.IntegrationType.user_install})
 async def insult(ctx):
     new_user_name = ctx.user.name
     new_user_id = ctx.user.id
@@ -150,7 +151,7 @@ async def insult(ctx):
         print(f"{new_user_id}|{new_user_name} already in list")
         await ctx.respond("Already in list, if you wish to opt out, use /imhurt.")
 
-@bot.slash_command(description="Opt Out Of Getting Insulted Every Hour... Weak...")
+@bot.slash_command(description="Opt Out Of Getting Insulted Every Hour... Weak...",contexts={discord.InteractionContextType.private_channel},integration_types={discord.IntegrationType.user_install})
 async def imhurt(ctx):
     userFile = "users.json"
     user_id_remove = ctx.user.id
@@ -180,7 +181,6 @@ async def imhurt(ctx):
 
     with open(userFile, 'w') as file:
         json.dump(data, file, indent=2)
-    
 
 @bot.event
 async def on_ready():
