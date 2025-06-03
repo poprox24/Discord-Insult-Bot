@@ -4,10 +4,15 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import json
 import threading
+import asyncio
 
 load_dotenv()
-bot = discord.Bot()
 
+intents = discord.Intents.default()
+intents.message_content = True
+intents.dm_messages = True
+
+bot = discord.Bot(command_prefix="!", intents=intents)
 client = OpenAI(api_key=os.getenv("OPENAI_TOKEN"))
 
 message_index = 0
@@ -63,31 +68,123 @@ def load_messages():
         print("Failed to load messaged:", e)
         generate_messages(callback=load_messages) # Regenerates messages if the AI responded with something that it doesn't like
 
-    insult()
+    asyncio.get_event_loop().create_task(insult_loop())
+
+async def dm_all_users(msg):
+    userFile = "users.json"
+
+    if not os.path.exists(userFile):
+        print("No users.json file, doing nothing")
+        return
+
+    with open(userFile, 'r') as file:
+        try:
+            user_ids = json.load(file)
+            if not isinstance(user_ids, list):
+                print("Users.json corrupted, expected list")
+                return
+        except json.JSONDecodeError:
+            print("Failed to decode users.json")
+            return
+
+    for user_id in user_ids:
+        try:
+            user = await bot.fetch_user(user_id)
+            await user.send(msg)
+            print(f"Dm sent to {user_id}")
+        except Exception as e:
+            print(f"Failed to dm {user_id}: {e}")
 
 
-def insult():
+async def insult_loop():
     global message_index, messages
 
-    if message_index >= len(messages):
-        message_index = 0
-        generate_messages(callback=load_messages)
+    while True:
+        if message_index >= len(messages):
+            message_index = 0
+            generate_messages(callback=load_messages)
+            return
+
+        if not messages:
+            generate_messages(callback=load_messages)
+            return
+        
+        msg = messages[message_index]
+        print(msg)
+        await dm_all_users(msg)
+
+        message_index += 1
+        await asyncio.sleep(8)
+
+
+@bot.slash_command(description="Opt Into Getting Insulted Every Hour")
+async def insult(ctx):
+    new_user_name = ctx.user.name
+    new_user_id = ctx.user.id
+
+    userFile = "users.json"
+
+    if os.path.exists(userFile):
+        with open(userFile, 'r') as file:
+            try:
+                data = json.load(file)
+                if not isinstance(data, list):
+                    print("file data not a list, resetting")
+                    data = []
+            except json.JSONDecodeError:
+                print("json decoding error, resetting")
+                data = []
+    else:
+        print("file not found, creating new list")
+        data = []
+
+    if new_user_id not in data:
+        print(f"{new_user_id}|{new_user_name} not in data, appending")
+        await ctx.respond(f"You have been added to the list.")
+        data.append(new_user_id)
+        
+        with open(userFile, 'w') as file:
+            json.dump(data, file, indent=2)
+        print("file saved")
+    else:
+        print(f"{new_user_id}|{new_user_name} already in list")
+        await ctx.respond("Already in list, if you wish to opt out, use /imhurt.")
+
+@bot.slash_command(description="Opt Out Of Getting Insulted Every Hour... Weak...")
+async def imhurt(ctx):
+    userFile = "users.json"
+    user_id_remove = ctx.user.id
+    user_name_remove = ctx.user.name
+
+    if os.path.exists(userFile):
+        with open(userFile, 'r') as file:
+            try:
+                data = json.load(file)
+                if not isinstance(data, list):
+                    print("file data not a list, resetting")
+                    data = []
+            except json.JSONDecodeError:
+                print("json decoding error, resetting")
+                data = []
+    else:
+        print("File not found, nothing to remove")
         return
 
-    if not messages:
-        generate_messages(callback=load_messages)
-        return
+    if user_id_remove in data:
+        data.remove(user_id_remove)
+        print(f"{user_id_remove}|{user_name_remove} removed")
+        await ctx.respond("You have been removed from the list")
+    else:
+        print(f"{user_id_remove}|{user_name_remove} not found")
+        await ctx.respond("You are not in the list")
+
+    with open(userFile, 'w') as file:
+        json.dump(data, file, indent=2)
     
-    msg = messages[message_index]
-    print(f"{message_index + 1}. {msg}")
-
-    message_index += 1
-
-    threading.Timer(5.0, insult).start()
 
 @bot.event
 async def on_ready():
-    print(f"{bot.user} is online.")
+    print(f"{bot.user.name} is online.")
     
     try:
         load_messages()
@@ -95,5 +192,4 @@ async def on_ready():
         print("Error on ready:", e)
         generate_messages(callback=load_messages)
 
-print("testing insult function")
 bot.run(os.getenv("BOT_TOKEN"))
