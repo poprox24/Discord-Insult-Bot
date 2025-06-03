@@ -141,7 +141,7 @@ async def insult(ctx):
 
     if new_user_id not in data:
         print(f"{new_user_id}|{new_user_name} not in data, appending")
-        await ctx.respond(f"You have been added to the list.")
+        await ctx.respond(f"You have been added to the list.", ephemeral=True)
         data.append(new_user_id)
         
         with open(userFile, 'w') as file:
@@ -149,7 +149,7 @@ async def insult(ctx):
         print("file saved")
     else:
         print(f"{new_user_id}|{new_user_name} already in list")
-        await ctx.respond("Already in list, if you wish to opt out, use /imhurt.")
+        await ctx.respond("Already in list, if you wish to opt out, use /imhurt.", ephemeral=True)
 
 @bot.slash_command(description="Opt Out Of Getting Insulted Every Hour... Weak...",contexts={discord.InteractionContextType.private_channel},integration_types={discord.IntegrationType.user_install})
 async def imhurt(ctx):
@@ -174,10 +174,10 @@ async def imhurt(ctx):
     if user_id_remove in data:
         data.remove(user_id_remove)
         print(f"{user_id_remove}|{user_name_remove} removed")
-        await ctx.respond("You have been removed from the list")
+        await ctx.respond("You have been removed from the list", ephemeral=True)
     else:
         print(f"{user_id_remove}|{user_name_remove} not found")
-        await ctx.respond("You are not in the list")
+        await ctx.respond("You are not in the list", ephemeral=True)
 
     with open(userFile, 'w') as file:
         json.dump(data, file, indent=2)
