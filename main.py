@@ -114,7 +114,7 @@ async def insult_loop():
         await dm_all_users(msg)
 
         message_index += 1
-        await asyncio.sleep(8)
+        await asyncio.sleep(3600)
 
 
 @bot.slash_command(description="Opt Into Getting Insulted Every Hour")
