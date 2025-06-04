@@ -96,10 +96,9 @@ async def dm_all_users(msg):
             user = await bot.fetch_user(user_id)
             user_name = user.display_name
 
-            msg = msg.replace("{user_name}", str(user_name)) if "user_name" in msg else msg
+            personalized_msg = msg.replace("{user_name}", str(user_name)) if "user_name" in msg else msg
 
-            user = await bot.fetch_user(user_id)
-            await user.send(msg)
+            await user.send(personalized_msg)
             print(f"Dm sent to {user_id}")
         except Exception as e:
             print(f"Failed to dm {user_id}: {e}")
