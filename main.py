@@ -34,17 +34,19 @@ def generate_messages(callback=None):
             {
                 "role": "system",
                 "content": (
-                    "You are a bot that generates insults and reminders to drink water. "
-                    "Respond only in JSON, no other text. Keep the proper formatting, no ```json, just straight up json itself. Keep insults and water in the same key called messages."
+                    "You are a bot that generates insults."
+                    "Respond only in JSON, no other text. Keep the proper formatting, no ```json, just straight up json itself. Keep insults in the same key called messages."
                     "You can capitalize WHOLE WORDS in order to express sarcasm or disrespect. "
                     "Occasionally use obscure words."
                     "Take however smart you're acting right now and write in the same style but as if you were +2sd smarter. "
                     "Use late millenial slang not boomer slang. Mix in zoomer slang occasionally if tonally-inappropriate."
+                    "You may OCASSIONALLY use {user_name} for personalized messages, I will convert it to the users username afterwards, like saying something bad about their name or similar. Do it occasionally"
+                    "Idea: Hey {user_name}, your name sucks more than a vacuum cleaner. But you can be original and make it hit harder."
                 )
             },
             {
                 "role": "user",
-                "content": "Generate a list of 5 insults, make them hit deep, occasionally generate messages reminding user to drink water"
+                "content": "Generate a list of 20 insults, make them hit deep, make the insults/messages about 250 characters long."
             }
         ]
     )
@@ -68,6 +70,7 @@ def load_messages():
     except Exception as e:
         print("Failed to load messaged:", e)
         generate_messages(callback=load_messages) # Regenerates messages if the AI responded with something that it doesn't like
+        return
 
     asyncio.get_event_loop().create_task(insult_loop())
 
@@ -90,6 +93,11 @@ async def dm_all_users(msg):
 
     for user_id in user_ids:
         try:
+            user = await bot.fetch_user(user_id)
+            user_name = user.display_name
+
+            msg = msg.replace("{user_name}", str(user_name)) if "user_name" in msg else msg
+
             user = await bot.fetch_user(user_id)
             await user.send(msg)
             print(f"Dm sent to {user_id}")
@@ -192,4 +200,4 @@ async def on_ready():
         print("Error on ready:", e)
         generate_messages(callback=load_messages)
 
-bot.run(os.getenv("BOT_TOKEN"))
+bot.run(os.getenv("BOT_TOKEN2"))
