@@ -200,4 +200,4 @@ async def on_ready():
         print("Error on ready:", e)
         generate_messages(callback=load_messages)
 
-bot.run(os.getenv("BOT_TOKEN2"))
+bot.run(os.getenv("BOT_TOKEN"))
