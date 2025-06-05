@@ -46,6 +46,7 @@ async def generate_messages(user_id, bio=None, username=None, displayname=None, 
             "You are given info about the user to personalize messages, have fun with it."
             "If it includes a timestamp, it is in the UNIX timestamp format. Convert it back to dates if possible."
             "The info you are given is directly from their discord profile, use it however you want to make your insults hit harder."
+            "Don't get too hooked up on the bio, if you just repeat the same stuff over and over it will get boring, use it cleverly."
         )
     else:
         system_prompt += (
