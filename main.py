@@ -20,7 +20,7 @@ bot = discord.Bot(intents=intents)
 client = OpenAI(api_key=os.getenv("OPENAI_TOKEN"))
 
 message_index = 0
-messages = []
+message = []
 generating = False # Prevent multiple generate calls
 
 # Generate The Messages
@@ -31,13 +31,13 @@ async def generate_messages(user_id, bio=None, username=None, displayname=None, 
     generating = True
     
     with open(f"{user_id}.json", "r") as response:
-        message = json.load(response).get("message", [])
+        last_message = json.load(response).get("message", [])
         user = await bot.fetch_user(user_id)
         user_name = user.display_name
 
-        personalized_msg = message.replace("{user_name}", str(user_name)) if "user_name" in message else message
+        personalized_msg = last_message.replace("{user_name}", str(user_name)) if "user_name" in last_message else last_message
 
-    print("Attempting to generate new messages")
+    print("Attempting to generate new message")
 
     styles = [
         "Pirate swagger with salty curses and sea-faring slang.",
@@ -85,7 +85,7 @@ async def generate_messages(user_id, bio=None, username=None, displayname=None, 
     )
     if bio or username or displayname or pronouns or tag:
         system_prompt += ( 
-            "You are given info about the user to personalize messages, have fun with it."
+            "You are given info about the user to personalize the insults, have fun with it."
             "If it includes a timestamp, it is in the UNIX timestamp format. Convert it back to dates if possible."
             "The info you are given is directly from their discord profile, use it however you want to make your insults hit harder."
             "Don't get too hooked up on the bio, if you just repeat the same stuff over and over it will get boring. Use it cleverly."
@@ -93,7 +93,7 @@ async def generate_messages(user_id, bio=None, username=None, displayname=None, 
         )
     else:
         system_prompt += (
-            "You may OCASSIONALLY use {user_name} for personalized messages, I will convert it to the users username afterwards, like saying something bad about their name or similar. Do it occasionally."
+            "You may OCASSIONALLY use {user_name} for personalized insults, I will convert it to the users username afterwards, like saying something bad about their name or similar. Do it occasionally."
             "Idea: Hey {user_name}, your name sucks more than a vacuum cleaner. But you can be original and make it hit harder."
         )
 
@@ -154,8 +154,6 @@ def get_randomized_sampling_params():
 
     return temperature, top_p
 
-
-
 async def dm_user(user_id):
     global message
     user = await bot.fetch_user(user_id)
@@ -167,54 +165,6 @@ async def dm_user(user_id):
         personalized_msg = message.replace("{user_name}", str(user_name)) if "user_name" in message else message
 
         await user.send(personalized_msg)
-
-
-async def dm_all_users():
-    userFile = "users.json"
-
-    if not os.path.exists(userFile):
-        print("No users.json file, doing nothing")
-        return
-
-    with open(userFile, 'r') as file:
-        try:
-            user_ids = json.load(file)
-            if not isinstance(user_ids, list):
-                print("Users.json corrupted, expected list")
-                return
-        except json.JSONDecodeError:
-            print("Failed to decode users.json")
-            return
-
-    for user_id in user_ids:
-        insult_file = f"{user_id}.json"
-        if not os.path.exists(insult_file):
-            print(f"No insult file for {user_id}")
-            continue
-        
-        try:
-            with open(insult_file, 'r') as f:
-                insult_data = json.load(f)
-        except Exception as e:
-            print(f"Failed to read insult file for {user_id}: {e}")
-            continue
-        
-        # get discord user object
-        user = await bot.fetch_user(user_id)
-        if not user:
-            print(f"User {user_id} not found")
-            continue
-
-        # build the insult message text from the json insult_data
-        # assuming insult_data looks like { "messages": ["insult1", "insult2", ...] }
-        insults = insult_data.get("messages", [])
-        insult_text = "\n".join(insults) if insults else "you suck lol"
-
-        try:
-            await user.send(insult_text)
-            print(f"Sent insult to {user_id}")
-        except Exception as e:
-            print(f"Failed to send insult to {user_id}: {e}")
 
 async def getUserData(user_id):
     user_info = await get_all_user_data(os.getenv("USER_TOKEN"), user_id)
