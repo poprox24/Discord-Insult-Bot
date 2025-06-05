@@ -192,7 +192,10 @@ async def get_all_user_data(user_token, target_user_id):
             pronouns = profile.get("pronouns", None)
             # User activity, returns a list of dicts
             guild = user.get("primary_guild", {})
-            tag = guild.get("tag", "")
+            if guild is None:
+                tag = ""
+            else:
+                tag = guild.get("tag", "")
 
             return {
                 "bio": bio,
