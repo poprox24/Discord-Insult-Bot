@@ -306,4 +306,4 @@ async def on_ready():
 
 
 
-bot.run(os.getenv("BOT_TOKEN2"))
+bot.run(os.getenv("BOT_TOKEN"))
