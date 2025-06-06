@@ -30,12 +30,16 @@ async def generate_messages(user_id, bio=None, username=None, displayname=None, 
         return
     generating = True
     
-    with open(f"{user_id}.json", "r") as response:
-        last_message = json.load(response).get("message", [])
-        user = await bot.fetch_user(user_id)
-        user_name = user.display_name
+    try:
+        with open(f"{user_id}.json", "r") as response:
+            last_message = json.load(response).get("message", [])
+    except FileNotFoundError:
+        last_message = "No message found. First message to this user."
+        
+    user = await bot.fetch_user(user_id)
+    user_name = user.display_name
 
-        personalized_msg = last_message.replace("{user_name}", str(user_name)) if "user_name" in last_message else last_message
+    personalized_msg = last_message.replace("{user_name}", str(user_name)) if "user_name" in last_message else last_message
 
     print("Attempting to generate new message")
 
