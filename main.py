@@ -319,8 +319,8 @@ async def generate_messages(user_id, bio=None, username=None, displayname=None, 
         await callback(user_id)
 
 def get_randomized_sampling_params():
-    temp_bases = [0.85, 1.0, 1.1]
-    top_p_bases = [0.9, 0.95, 0.98]
+    temp_bases = [0.84, 1.0, 1.12]
+    top_p_bases = [0.9, 0.92, 0.98]
 
     temp_base = random.choice(temp_bases)
     top_p_base = random.choice(top_p_bases)
@@ -328,15 +328,10 @@ def get_randomized_sampling_params():
     temperature = temp_base + random.uniform(-0.25, 0.35)
     top_p = top_p_base + random.uniform(-0.1, 0.05)
 
-    chaos_chance = random.uniform(0.15, 0.42)
+    chaos_chance = random.uniform(0.35, 0.65)
     if random.random() < chaos_chance:
-
-        if random.random() < 0.6:
-            temperature = random.uniform(1.3, 2.0)
-            top_p = random.uniform(0.9, 1.0)
-        else:
-            temperature = random.uniform(0.2, 0.4)
-            top_p = random.uniform(0.6, 0.85)
+        temperature = random.uniform(1.3, 2.0)
+        top_p = random.uniform(0.9, 1.0)
 
     temperature = min(max(temperature, 0.2), 2.0)
     top_p = min(max(top_p, 0.1), 1.0)
