@@ -480,6 +480,10 @@ async def imhurt(ctx):
     with open(userFile, 'w') as file:
         json.dump(data, file, indent=2)
 
+@bot.slash_command(description="Get insulted right now",contexts={discord.InteractionContextType.private_channel,discord.InteractionContextType.guild,discord.InteractionContextType.bot_dm},integration_types={discord.IntegrationType.user_install,discord.IntegrationType.guild_install})
+async def insultme(ctx):
+    await ctx.respond("Generating message", ephemeral=True)
+    await getUserData(ctx.author.id)
 
 userFile = "users.json"
 
